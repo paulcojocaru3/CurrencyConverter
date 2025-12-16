@@ -41,7 +41,7 @@ class load_data:
     def normalize_currencies(self, currencies):
         if currencies is None:
             currencies = self.currencies
-        normalized = {}
+        normalized = {'RON' : 1.0000}
         for item in currencies:
             normalized[item['currency']] = round(float(item['Rate']) * float(item['multiplier']),4)
         return normalized
