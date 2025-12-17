@@ -5,13 +5,25 @@ import time
 import json
 import decimal
 
+"""
+Incarcarea si cacheuirea datelor de la BNR.
+Parsarea datelor XML intr-un format utilizabil si in crearea cache-ului json.
+Normalizarea datelor -> {currency: rate_in_RON}
+"""
 
 class load_data:
+    """
+    currencies (dict) -> (key)currency and (value)exchange rates
+    timestamp (str) -> ultimul fetch time cu succes
+    fetched (bool) -> daca a fost fetchat sau nu
+    cached (bool) -> daca a fost uploadat din cache.json
+    """
     def __init__(self):
         self.currencies = {}
         self.timestamp = None
         self.last_updated = None
         self.fetched = None
+        self.cached = None
     def load(self):
         url = "https://www.bnr.ro/nbrfxrates.xml"
         try:
@@ -24,12 +36,13 @@ class load_data:
             self.fetched = True
             return True
         except requests.RequestException:
+            self.fetched = False
             if os.path.exists('cache.json'):
                 with open('cache.json', 'r') as f:
                     data = json.load(f)
                     self.currencies = data['currencies']
                     self.timestamp = data['last_updated']
-                    self.fetched = False
+                    self.cached = True
                 print("Uploading from cache.json")
                 return False
             elif not os.path.exists('cache.json'):
