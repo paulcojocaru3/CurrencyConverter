@@ -31,8 +31,11 @@ class CurrencyConverterGUI:
         self.converter.currencies = self.currencies
         self.last_update = self.loader.timestamp
 
+        self.no_cacheandfetch = None
+
         self.create_widgets()
         self.schedule_refresh()
+
     def create_widgets(self):
         """Crearea layerelor din GUI"""
         if self.loader.fetched:
@@ -44,6 +47,7 @@ class CurrencyConverterGUI:
         else:
             bg_color = "red"
             text = "No cache/fetch - Please connect to the internet"
+            self.no_cacheandfetch = True
 
         #banner
         self.banner = tk.Frame(self.root, bg=bg_color, height=35)
@@ -128,29 +132,29 @@ class CurrencyConverterGUI:
         currency_list = sorted(list(self.currencies.keys()))
         self.from_combo['values'] = currency_list
         self.to_combo['values'] = currency_list
-
-        self.result_label.config(text="Result: ")
+        if self.loader.fetched:
+            self.result_label.config(text="Result: ")
         #update
         self.update_label.config(text=f"Last update: {self.last_update}")
         if self.loader.fetched:
             #banner
             self.banner.config(bg="green")
             self.banner_label.config(text="Using latest BNR rates", bg="green")
-            self.from_combo.set("USD")
-            self.to_combo.set("RON")
+            if self.no_cacheandfetch:
+                self.from_combo.set("USD")
+                self.to_combo.set("RON")
+            self.no_cacheandfetch = False
         elif self.loader.cached:
             #banner
             self.banner.config(bg="orange")
             self.banner_label.config(text="Using cached rates - No network connection", bg="orange")
-            self.from_combo.set("USD")
-            self.to_combo.set("RON")
         else:
             self.banner.config(bg="red")
             self.banner_label.config(text="No cache/fetch - Please connect to the internet", bg="red")
 
     def schedule_refresh(self):
         now = datetime.now()
-        today_noon = now.replace(hour=13, minute=0, second=0, microsecond=0)
+        today_noon = now.replace(hour=13, minute=1, second=0, microsecond=0)
         if now >= today_noon:
             next_noon = today_noon + timedelta(days=1)
         else:
